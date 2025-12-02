@@ -49,4 +49,5 @@ display(fig)
 save("Heisenberg_PeriSqua/figures/spin pattern_$(Lx)x$(Ly)_$(params)_$(T0)_$(T)_$(α)_$(Nt)_$(N).pdf",fig)
 save("Heisenberg_PeriSqua/figures/spin pattern_$(Lx)x$(Ly)_$(params)_$(T0)_$(T)_$(α)_$(Nt)_$(N).png",fig)
 
+# norm.(S)
 S

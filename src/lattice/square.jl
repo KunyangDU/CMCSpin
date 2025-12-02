@@ -2,10 +2,14 @@ mutable struct SquareLattice{D,S,L} <: SimpleLattice{D,S,L}
     unitcell::LatticeUtilities.UnitCell
     lattice::LatticeUtilities.Lattice
     bond::Dict
+    sitemap::Tuple
+    asitemap::Tuple
+    group::Union{Nothing,Tuple}
     # data::Union{Nothing,Vector}
-    function SquareLattice(unitcell,lattice::Lattice{D},bond) where D
+    function SquareLattice(unitcell,lattice::Lattice{D},bond::Dict,sitemap::Tuple = Tuple(1:*(lattice.L...))) where D
         S = lattice.L
-        return new{D,S,*(S...)}(unitcell,lattice,bond)
+        asitemap = Tuple([findfirst(x -> x == i,sitemap) for i in Tuple(1:*(lattice.L...))])
+        return new{D,S,*(S...)}(unitcell,lattice,bond,sitemap,asitemap)
     end
 end
 
@@ -21,7 +25,7 @@ end
 #     return SquareLattice(square,lattice,bond)
 # end
 
-function PeriSqua(L, W)
+function PeriSqua(L, W, sitemap::Tuple = Tuple(1:L*W))
     # 正方晶格基矢
     sq = UnitCell(lattice_vecs = [[1., 0.], [0., 1.]], basis_vecs = [[0., 0.]])
     lattice = Lattice(L = [W, L], periodic = [true, true])
@@ -48,5 +52,5 @@ function PeriSqua(L, W)
         (true, 3) => bonds_3_all, (false, 3) => bonds_3_fwd,
     )
 
-    return SquareLattice(sq, lattice, bond)
+    return SquareLattice(sq, lattice, bond, sitemap)
 end

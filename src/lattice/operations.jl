@@ -1,12 +1,14 @@
 function neighbor(Latt::SimpleLattice;level::Int64 = 1,ordered::Bool = false)
-    return collect(Tuple.(sort.(eachcol(build_neighbor_table(Latt.bond[(ordered,level)], Latt.unitcell, Latt.lattice)))))
+    return collect(map(x -> Tuple(sort(collect(Latt.sitemap[x]))), eachcol(build_neighbor_table(Latt.bond[(ordered,level)], Latt.unitcell, Latt.lattice))))
 end
 function neighbor(Latt::SimpleLattice,i::Int64;level::Int64 = 1,ordered::Bool = false)
     nb = neighbor(Latt;level = level,ordered = ordered)
     return neighbor(nb,i)
 end
 neighbor(nb::Vector,i::Int64) = filter(x -> i in x,nb)
-
+function neighborsites(Latt::SimpleLattice,i::Int64;level::Int64 = 1)
+    return map(x -> x[1] == i ? x[2] : x[1], neighbor(Latt,i;level = level))
+end
 """
 translation vector on lattice basis
 """
@@ -17,13 +19,13 @@ end
 translation vector in Descartes coordinate
 """
 function distance(Latt::SimpleLattice,i::Int64,j::Int64)
-    return collect(displacement_to_vec(displacement(Latt,i,j),1,1,Latt.unitcell))
+    return collect(displacement_to_vec(displacement(Latt,Latt.asitemap[i],Latt.asitemap[j]),1,1,Latt.unitcell))
 end
 """
 position on lattice basis with sublattice index
 """
 function location(Latt::SimpleLattice,i::Int64)
-    return site_to_loc(i,Latt.unitcell,Latt.lattice)
+    return site_to_loc(Latt.asitemap[i],Latt.unitcell,Latt.lattice)
 end
 """
 position in Descartes coordinate

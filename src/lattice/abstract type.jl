@@ -5,7 +5,7 @@ Base.@propagate_inbounds Base.getindex(A::AbstractLattice, i::Int) = reverse(loc
 Base.size(A::AbstractLattice) = A.lattice.L
 dim(A::AbstractLattice) = dim(A.lattice)
 dim(::Lattice{D}) where D = D
-Base.length(A::AbstractLattice) = *(size(A)...)
+Base.length(::SimpleLattice{D,S,L}) where {D,S,L} = L
 # Base.@propagate_inbounds Base.setindex!(A::SimpleLattice, value, i::Int) = 1
 
 

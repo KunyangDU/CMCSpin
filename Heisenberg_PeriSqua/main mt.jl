@@ -10,7 +10,7 @@ function calculate!(ψ::Dict,N::Int64,W::Int64,H::Dict,algo::Dict,
         "W" => W,
         "E" => Float64[],
         "M" => Float64[],
-        "S" => [zeros(3) for _ in 1:length(Latt)]
+        "S" => [zeros(3) for _ in 1:length(Latt)],
     )
     @timeit to "calculate" begin
         for j in 1:N
@@ -28,18 +28,25 @@ function calculate!(ψ::Dict,N::Int64,W::Int64,H::Dict,algo::Dict,
     return ψ,data,to
 end
 
+function extra_SS!(ψ::Dict,data::Dict)
+    L = length(ψ["S"])
+    M = zeros(L,L)
+    M = dot.(ψ["S"], ψ["S"]')
+    !haskey(data,"SS") && (data["SS"] = zeros(L,L))
+    data["SS"] += M / data["N"] / data["W"]
+end
 
 dataname = "Heisenberg_PeriSqua/data/mt"
 
-Lx = 8
-Ly = 8
+Lx = 10
+Ly = 10
 Latt = PeriSqua(Lx,Ly)
 @save "$(dataname)/Latt_$(Lx)x$(Ly)" Latt
-params = (J = -1.0,)
+params = (J = 1.0,)
 H = Dict(
     "J1" => (params.J * diagm([1,1,1]),
          Tuple(neighbor(Latt)),
-         Dict(i => map(x -> (x[1] == i ? x[2] : x[1]), filter(x -> i in x,Tuple(neighbor(Latt))))  for i in 1:length(Latt))),
+         Dict(i => collect(map(x -> (x[1] == i ? x[2] : x[1]), filter(x -> i in x,Tuple(neighbor(Latt)))))  for i in 1:length(Latt))),
     "h" => (-[0.0,0.0,0.0],Tuple(tuple.(1:length(Latt)))),
     "hsb" => (-[0,0,1],((1,),))
 )
@@ -60,11 +67,11 @@ thmalgo = Dict(
 )
 
 T0 = 2
-T = 0.001
+T = 0.005
 
 α = 0.9
 Nt = 1000
-N = 100000
+N = 0
 W = 2
 
 lsT = Float64[]
@@ -98,7 +105,7 @@ let Ttmp = T0
                     lock(Lock)
                     ψ′ = deepcopy(ψ)
                     unlock(Lock)
-                    _,tdata,local_to = calculate!(ψ′,Npert,W,H,algo)
+                    _,tdata,local_to = calculate!(ψ′,Npert,W,H,algo,extra_SS!)
                     tdata["T"] = Ttmp
 
                     lock(Lock)
@@ -138,6 +145,7 @@ let Ttmp = T0
         show(to;title = "$(i)/$(ceil(Int64,log(α,T/T0))) - T = $(round(Ttmp;digits = 4))")
         print("\n")
     end
+    @save "$(dataname)/ψ_$(Lx)x$(Ly)_$(params)_$(N)_$(W)_$(round(Ttmp;digits = 8)).jld2" ψ
 end
 
 @save "$(dataname)/lsT_$(T0)_$(T)_$(α)_$(Nt).jld2" lsT

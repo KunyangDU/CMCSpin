@@ -4,9 +4,14 @@ mutable struct HoneycombLattice{D,S,L} <: SimpleLattice{D,S,L}
     unitcell::LatticeUtilities.UnitCell
     lattice::LatticeUtilities.Lattice
     bond::Dict
-    function HoneycombLattice(unitcell,lattice::Lattice{D},bond) where D
+    sitemap::Tuple
+    asitemap::Tuple
+    group::Union{Nothing,Tuple}
+    function HoneycombLattice(unitcell,lattice::Lattice{D},bond,sitemap::Tuple = Tuple(1:*(lattice.L...))) where D
         S = lattice.L
-        return new{D,S,*(S...)}(unitcell,lattice,bond)
+        # return new{D,S,*(S...)}(unitcell,lattice,bond)
+        asitemap = Tuple([findfirst(x -> x == i,sitemap) for i in Tuple(1:*(lattice.L...))])
+        return new{D,S,*(S...)}(unitcell,lattice,bond,sitemap,asitemap)
     end
 end
 

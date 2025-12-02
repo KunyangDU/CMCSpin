@@ -1,14 +1,23 @@
+# function FT2(Latt::SimpleLattice, SM::Matrix, k::Tuple)
+#     N = length(Latt)
+#     @assert SM ≈ SM'
+#     # k = [0.0,0.0]
+#     SSF = 0.0
+#     for i in 1:N, j in i+1:N
+#         SSF += SM[i,j] * exp(1im*dot(collect(k),coordinate(Latt,i) - coordinate(Latt,j))) / N
+#     end
+#     for i in 1:N
+#         SSF += SM[i,i] / N
+#     end
+#     return real(SSF) / N
+# end
+
 function FT2(Latt::SimpleLattice, SM::Matrix, k::Tuple)
     N = length(Latt)
     @assert SM ≈ SM'
-    # k = [0.0,0.0]
-    SSF = 0.0
-    for i in 1:N, j in i+1:N
-        SSF += SM[i,j] * exp(1im*dot(collect(k),coordinate(Latt,i) - coordinate(Latt,j))) / N
-    end
-    for i in 1:N
-        SSF += SM[i,i] / N
-    end
+    Rs = [dot(collect(k) ,coordinate(Latt,i)) for i in 1:N]
+    Sqf = exp.(1im * (ones(N) * Rs' .- Rs * ones(N)')) / N
+    SSF = sum(Sqf .* SM)
     return real(SSF) / N
 end
 

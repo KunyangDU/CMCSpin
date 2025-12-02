@@ -32,11 +32,6 @@ end
 function updata_S_Heatbath(h::Vector,algo::Dict)
     b = algo["β"] * norm(h)
 
-    cθ = max(min(log(exp(-b) + rand()*(exp(b) - exp(-b))) / b,1),-1)
-    sθ = sqrt(1 - cθ^2)
-    sϕ,cϕ = sincos(2pi * rand())
-    S′ = [sθ*cϕ,sθ*sϕ,cθ]
-
     ŵ = h / norm(h)
     if abs(ŵ[1]) < 0.6 && abs(ŵ[2]) < 0.6
         û = [0.0, -ŵ[3], ŵ[2]]
@@ -46,21 +41,18 @@ function updata_S_Heatbath(h::Vector,algo::Dict)
     û /= norm(û)
     v̂ = cross(ŵ,û)
 
-    return hcat(û,v̂,ŵ) * S′
+    cθ = max(min(log(exp(-b) + rand()*(exp(b) - exp(-b))) / b,1),-1)
+    sθ = sqrt(1 - cθ^2)
+    sϕ,cϕ = sincos(2pi * rand())
+
+    return hcat(û,v̂,ŵ) * [sθ*cϕ,sθ*sϕ,cθ]
+    # return hcat(ŵ,nullspace(ŵ')) * [sθ*cϕ,sθ*sϕ,cθ]
 end
 
 function update!(ψ::Dict, H::Dict, algo::Dict)
-    Jij,_,nbsites = H["J1"]
+    # Jij,_,nbsites = H["J1"]
     for i in shuffle(1:length(Latt))
-        heff = zeros(3)
-        
-        for s in nbsites[i]
-            heff += - Jij * ψ["S"][s]
-        end
-        heff += -H["h"][1]
-        if i in H["hsb"][2][1]
-            heff += -H["hsb"][1]
-        end
+        heff = calc_heff(ψ,H,i)
 
         if algo["update"] == "Heat bath"
             ψ["S"][i] = updata_S_Heatbath(heff,algo)
@@ -71,6 +63,16 @@ function update!(ψ::Dict, H::Dict, algo::Dict)
             rand() < min(exp(-algo["β"] * ΔE),1) && (ψ["S"][i] = S′)
         end
     end
+end
+
+function calc_heff(ψ::Dict, H::Dict, i::Int64)
+    heff = zeros(3)
+    heff += - H["J1"][1] * sum(ψ["S"][H["J1"][3][i]])
+    heff += -H["h"][1]
+    if i in H["hsb"][2][1]
+        heff += -H["hsb"][1]
+    end
+    return heff
 end
 
 # function update!(ψ::Dict, H::Dict, algo::Dict)
