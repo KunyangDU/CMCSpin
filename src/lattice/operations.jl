@@ -1,45 +1,45 @@
-function neighbor(Latt::SimpleLattice;level::Int64 = 1,ordered::Bool = false)
+function neighbor(Latt::AbstractLattice;level::Int64 = 1,ordered::Bool = false)
     return collect(map(x -> Tuple(sort(collect(Latt.sitemap[x]))), eachcol(build_neighbor_table(Latt.bond[(ordered,level)], Latt.unitcell, Latt.lattice))))
 end
-function neighbor(Latt::SimpleLattice,i::Int64;level::Int64 = 1,ordered::Bool = false)
+function neighbor(Latt::AbstractLattice,i::Int64;level::Int64 = 1,ordered::Bool = false)
     nb = neighbor(Latt;level = level,ordered = ordered)
     return neighbor(nb,i)
 end
 neighbor(nb::Vector,i::Int64) = filter(x -> i in x,nb)
-function neighborsites(Latt::SimpleLattice,i::Int64;level::Int64 = 1)
+function neighborsites(Latt::AbstractLattice,i::Int64;level::Int64 = 1)
     return map(x -> x[1] == i ? x[2] : x[1], neighbor(Latt,i;level = level))
 end
 """
 translation vector on lattice basis
 """
-function displacement(Latt::SimpleLattice,i::Int64,j::Int64)
+function displacement(Latt::AbstractLattice,i::Int64,j::Int64)
     return collect(sites_to_displacement(i,j,Latt.unitcell,Latt.lattice))
 end
 """
 translation vector in Descartes coordinate
 """
-function distance(Latt::SimpleLattice,i::Int64,j::Int64)
+function distance(Latt::AbstractLattice,i::Int64,j::Int64)
     return collect(displacement_to_vec(displacement(Latt,Latt.asitemap[i],Latt.asitemap[j]),1,1,Latt.unitcell))
 end
 """
 position on lattice basis with sublattice index
 """
-function location(Latt::SimpleLattice,i::Int64)
+function location(Latt::AbstractLattice,i::Int64)
     return site_to_loc(Latt.asitemap[i],Latt.unitcell,Latt.lattice)
 end
 """
 position in Descartes coordinate
 """
-function coordinate(Latt::SimpleLattice,i::Int64)
+function coordinate(Latt::AbstractLattice,i::Int64)
     return loc_to_pos(Latt[i][2],Latt[i][1],Latt.unitcell)
 end
 # """
-#     coordinate(Latt::SimpleLattice, i::Int)
+#     coordinate(Latt::AbstractLattice, i::Int)
 
 # 获取第 i 个格点的物理坐标 [x, y]。
 # 索引顺序假设：基底索引(Basis) -> 宽度方向(W) -> 长度方向(L)
 # """
-# function coordinate(Latt::SimpleLattice, i::Int)
+# function coordinate(Latt::AbstractLattice, i::Int)
 #     # 1. 获取基本参数
 #     # Latt.lattice.L = [W, L]
 #     W = Latt.lattice.L[1] 
@@ -73,7 +73,7 @@ end
 """
 return tb = {L*W*N array}, satisfying tb[i,j,site1] -> site2 which can be obstain by a translation vector [i,j] from site1.
 """
-function build_destination_array(Latt::SimpleLattice)
+function build_destination_array(Latt::AbstractLattice)
     W,L = Latt.lattice.L
     N = Latt.lattice.N
     tb = zeros(Int64,L,W,N)
@@ -86,7 +86,7 @@ end
 """
 return nbls = {level-th neighbor list}, maps = {array}, satisfying maps[i] = (bond connecting i, sites level-the neighboring i)
 """
-function build_neighbor_array(Latt::SimpleLattice;level::Int64 = 1,ordered::Bool = false)
+function build_neighbor_array(Latt::AbstractLattice;level::Int64 = 1,ordered::Bool = false)
     maps = map_neighbor_table(build_neighbor_table(Latt.bond[(ordered,level)],Latt.unitcell,Latt.lattice))
     maps = [maps[i] for i in 1:Latt.lattice.N]
     nbls = neighbor(Latt;level = level,ordered = ordered)
@@ -95,7 +95,7 @@ end
 """
 return tb = {L*W*length(states) array}, satisfying tb[i,j,state1] -> state2 which can be obstain by a translation vector [i,j] from state1.
 """
-function build_translation_array(Latt::SimpleLattice,states::Vector,intr::Int64=2)
+function build_translation_array(Latt::AbstractLattice,states::Vector,intr::Int64=2)
     W,L = Latt.lattice.L
     N = Latt.lattice.N
     dntb = build_destination_array(Latt)
@@ -113,7 +113,7 @@ return tb = {Dict}, satisfying:
 - tb[(i,)] -> vector which leads i again, i.e., the smallest periodicity; 
 - tb[(i,j)] -> vector which leads j , i.e., the translation vector.
 """
-function build_translation_vec_map(Latt::SimpleLattice,states::Vector,intr::Int64=2)
+function build_translation_vec_map(Latt::AbstractLattice,states::Vector,intr::Int64=2)
     W,L = Latt.lattice.L
     N = Latt.lattice.N
     dntb = build_destination_array(Latt)

@@ -40,3 +40,10 @@ function window(x::Number)
 end
 
 get_num_threads_julia() = Threads.nthreads()
+
+function get_chunk_range(N::Int, k::Int, i::Int)
+    # i 是当前分块序号 (1 到 k)
+    start_idx = div((i - 1) * N, k) + 1
+    end_idx   = div(i * N, k)
+    return start_idx:end_idx
+end

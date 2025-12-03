@@ -1,5 +1,5 @@
 
-function plotLatt!(ax::Axis,Latt::SimpleLattice,
+function plotLatt!(ax::Axis,Latt::AbstractLattice,
     xshift::Vector = collect.(eachcol(Latt.unitcell.lattice_vecs))[1],
     yshift::Vector = collect.(eachcol(Latt.unitcell.lattice_vecs))[2],
     ;kwargs...)
