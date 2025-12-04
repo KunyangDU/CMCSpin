@@ -167,7 +167,7 @@ end
 Lx, Ly = 50, 10
 spins = Matrix{Vector{Float64}}(undef, Lx, Ly)
 for i in 1:Lx, j in 1:Ly
-    spins[i, j] = iseven(i+j) ? [0.0,0.0,1.0] : [0.0,0.0,1.0]
+    spins[i, j] = iseven(i+j) ? [0.0,0.0,1.0] : [0.0,0.0,-1.0]
 end
 # 加上一点随机扰动模拟 MC 数据的不完美性
 # for i in 1:Lx, j in 1:Ly; spins[i,j] += 0.05*randn(3); spins[i,j]/=norm(spins[i,j]); end
@@ -176,7 +176,7 @@ config = SpinConfig(Lx, Ly, 0.5, -1.0, spins)
 
 nk_seg = 100
 path_vec = vcat(
-    [[k, 0.0] for k in range(0, π, length=nk_seg)],
+    # [[k, 0.0] for k in range(0, π, length=nk_seg)],
     [[k, pi] for k in range(0, π, length=nk_seg)],
     # [[π, k] for k in range(0, π, length=nk_seg)],
     # [[k, k] for k in range(π, 0, length=nk_seg)]

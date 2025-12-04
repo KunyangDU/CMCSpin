@@ -16,6 +16,7 @@ include("algorithm/thermalize.jl")
 include("algorithm/SD.jl")
 include("algorithm/SA.jl")
 include("algorithm/update.jl")
+include("algorithm/LSW.jl")
 
 include("Hamiltonian/addIntr.jl")
 include("Hamiltonian/operations.jl")

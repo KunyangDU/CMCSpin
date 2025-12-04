@@ -19,7 +19,7 @@ Base.length(::SimpleLattice{D,S,L}) where {D,S,L} = L
 function PeriSqua(L::Int64, W::Int64, sitemap::Tuple = Tuple(1:L*W))
     # 定义正方晶格元胞
     sq = UnitCell(lattice_vecs = [[1., 0.], [0., 1.]], basis_vecs = [[0., 0.]])
-    lattice = Lattice(L = [W, L], periodic = [true, true])
+    lattice = Lattice(L = [L, W], periodic = [true, true])
 
     # --- 定义前向偏移量 (Forward Offsets) ---
     
@@ -69,7 +69,7 @@ end
 
 function XCPeriTria(L::Int64, W::Int64, sitemap::Tuple = Tuple(1:L*W))
     tria = UnitCell(lattice_vecs = [[1., 0.], [0.5, sqrt(3)/2]], basis_vecs = [[0., 0.]])
-    lattice = Lattice(L = [W, L], periodic = [true, true])
+    lattice = Lattice(L = [L, W], periodic = [true, true])
 
 # --- 偏移量定义 ---
     

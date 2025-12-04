@@ -19,7 +19,7 @@ honey = UnitCell(
         lattice_vecs = [[1., 0.], [0.5, sqrt(3)/2]],
         basis_vecs   = [[0., 0.], [0.5, sqrt(3)/6]] 
     )
-    lattice = Lattice(L = [W, L], periodic = [true, true])
+    lattice = Lattice(L = [L, W], periodic = [true, true])
 
     # --- 辅助变量 ---
     # 三角晶格前向 (用于同子格 A-A 连接)

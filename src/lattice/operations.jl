@@ -1,13 +1,13 @@
-function neighbor(Latt::AbstractLattice;level::Int64 = 1,ordered::Bool = false)
-    return collect(map(x -> Tuple(sort(collect(Latt.sitemap[x]))), eachcol(build_neighbor_table(Latt.bond[(ordered,level)], Latt.unitcell, Latt.lattice))))
+function neighbor(Latt::AbstractLattice;level::Int64 = 1,ordered::Bool = false,issort::Bool = true)
+    return collect(map(x -> Tuple(issort ? sort(collect(Latt.sitemap[x])) : collect(Latt.sitemap[x])), eachcol(build_neighbor_table(Latt.bond[(ordered,level)], Latt.unitcell, Latt.lattice))))
 end
-function neighbor(Latt::AbstractLattice,i::Int64;level::Int64 = 1,ordered::Bool = false)
-    nb = neighbor(Latt;level = level,ordered = ordered)
+function neighbor(Latt::AbstractLattice,i::Int64;level::Int64 = 1,ordered::Bool = false,issort::Bool = true)
+    nb = neighbor(Latt;level = level,ordered = ordered,issort = issort)
     return neighbor(nb,i)
 end
 neighbor(nb::Vector,i::Int64) = filter(x -> i in x,nb)
-function neighborsites(Latt::AbstractLattice,i::Int64;level::Int64 = 1)
-    return map(x -> x[1] == i ? x[2] : x[1], neighbor(Latt,i;level = level))
+function neighborsites(Latt::AbstractLattice,i::Int64;level::Int64 = 1,ordered::Bool = false,issort::Bool = true)
+    return map(x -> x[1] == i ? x[2] : x[1], neighbor(Latt,i;level = level,ordered = ordered,issort = issort))
 end
 """
 translation vector on lattice basis
@@ -131,5 +131,74 @@ function build_translation_vec_map(Latt::AbstractLattice,states::Vector,intr::In
         end
     end
     return tb
+end
+
+function _build_neighbor_table(bond::Bond{D}, unit_cell::UnitCell{D}, lattice::Lattice{D}) where {D}
+
+    (; N) = lattice
+    (; displacement, orbitals) = bond
+
+    # initialize empty neighbor table
+    neighbor_table = []
+
+    # iterate over all unit cells
+    for u in 1:N
+        # get initial site
+        s = loc_to_site(u, orbitals[1], unit_cell)
+        # get final site
+        s′,pbcv = _site_to_site(s, displacement, orbitals[2], unit_cell, lattice)
+        # check if final site was found
+        if s′ != 0
+            # add to neighbor table
+            push!(neighbor_table, ([s,s′],pbcv))
+        end
+    end
+
+    # if isempty(neighbor_table)
+    #     return zeros(Int, 2, 0)
+    # else
+    #     return hcat(neighbor_table...)
+    # end
+    return neighbor_table
+end
+
+
+function _site_to_site(s::Int, Δl, o::Int, unit_cell::UnitCell{D}, lattice::Lattice{D}) where {D}
+
+    l = lattice.lvec
+
+    # get unit cell location containing s₁
+    o′ = site_to_loc!(l, s, unit_cell, lattice)
+
+    # displace unit cell location
+    @. l += Δl
+    l₀ = deepcopy(l)
+
+    # apply periodic boundary conditions
+    pbc!(l, lattice)
+
+    # get final site
+    s′ = loc_to_site(l, o, unit_cell, lattice)
+
+    return s′,collect(l₀ - l)
+end
+
+function _build_neighbor_table(bonds, unit_cell::UnitCell{D}, lattice::Lattice{D}) where {D}
+
+    neighbor_tables = []
+    for i in eachindex(bonds)
+        neighbor_table = _build_neighbor_table(bonds[i], unit_cell, lattice)
+        push!(neighbor_tables, neighbor_table...)
+    end
+
+    return neighbor_tables
+end
+
+function neighbor_pbc(Latt::AbstractLattice;level::Int64 = 1,ordered::Bool = false, issort::Bool = false)
+    nb = _build_neighbor_table(Latt.bond[(ordered,level)],Latt.unitcell,Latt.lattice)
+    if issort
+        nb =  map(x -> (Tuple(sort(collect(x[1]))),x[2]), nb)
+    end
+    return map(x -> (Tuple(Latt.sitemap[x[1]]),x[2]), nb)
 end
 

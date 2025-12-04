@@ -2,8 +2,8 @@
 include("../src/src.jl")
 
 
-Lx = 8
-Ly = 8
+Lx = 4
+Ly = 4
 
 Latt = XCPeriTria(Lx,Ly)
 
@@ -22,3 +22,6 @@ neighbor(Latt,1)
 save("lattice/figures/XCPeriTria_$(Lx)x$(Ly).pdf",fig)
 save("lattice/figures/XCPeriTria_$(Lx)x$(Ly).png",fig)
 # issorted.(neighbor(Latt))
+# neighbor(Latt,1;issort = false)
+
+

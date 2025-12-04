@@ -21,3 +21,21 @@ Base.getindex(ψ::SimpleState,i::Vector{Int64}) = ψ.pattern[:,i]
 function Base.setindex!(ψ::SimpleState, a::Vector{Float64}, i::Int64)
     ψ.pattern[:,i] = a
 end
+
+Base.length(::SimpleState{D,L}) where {D,L} = L
+
+function Base.iterate(A::SimpleState)
+    if isempty(A.pattern)
+        return nothing
+    else
+        return (A.pattern[:,1], 2)
+    end
+end
+
+function Base.iterate(A::SimpleState, i::Int64)
+    if i > length(A)
+        return nothing
+    else
+        return (A.pattern[:,i], i + 1)
+    end
+end

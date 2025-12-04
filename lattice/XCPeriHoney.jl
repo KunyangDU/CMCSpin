@@ -2,10 +2,10 @@
 include("../src/src.jl")
 
 
-Lx = 6
-Ly = 6
+Lx = 3
+Ly = 3
 
-Latt = XCPeriHoney(Lx,Ly)
+Latt = XCPeriHoneycomb(Lx,Ly)
 
 figsize = (height = (Ly+1)*80*sqrt(3)/3, width = (Lx + 1)*80)
 
@@ -21,4 +21,4 @@ save("lattice/figures/XCPeriHoney_$(Lx)x$(Ly).pdf",fig)
 save("lattice/figures/XCPeriHoney_$(Lx)x$(Ly).png",fig)
 # issorted.(neighbor(Latt))
 
-neighbor(Latt)
+neighbor_pbc(Latt)
