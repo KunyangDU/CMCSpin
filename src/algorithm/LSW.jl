@@ -1,4 +1,4 @@
-displacement(Latt::AbstractLattice, i::Int64, j::Int64, v::Vector) = (coordinate(Latt,i) - coordinate(Latt,j) + Latt.unitcell.lattice_vecs * v) / 2
+displacement(Latt::AbstractLattice, i::Int64, j::Int64, v::Vector) = (coordinate(Latt,i) - coordinate(Latt,j) + Latt.unitcell.lattice_vecs * v) 
 
 function _LSW_AB(k::Vector,ψ::SimpleState,H::Hamiltonian,vs::Vector;S::Number = 1/2)
     A = zeros(ComplexF64,length(ψ),length(ψ))
@@ -26,7 +26,7 @@ function LSW(ψ::SimpleState, H::Hamiltonian, lsk::Vector; isweight::Bool = fals
     showperstep::Int64 = 50)
     vs = map(y -> y[1] + 1im * y[2],map(x -> _local_axis(x),ψ))
     band = zeros(ComplexF64, length(ψ),length(lsk))
-
+    As = zeros(length(lsk))
     to = TimerOutput()
 
     if isweight
@@ -74,10 +74,13 @@ function LSW(ψ::SimpleState, H::Hamiltonian, lsk::Vector; isweight::Bool = fals
             show(to;title = "$(ik)/$(length(lsk))")
             print("\n")
         end
+        @show [Ak[i,i] for i in 1:length(ψ)]
+        As[ik] = tr(Ak)
     end
-
+    
     @assert mean(abs.(imag.(band))) < 1e-8 "spin not stable"
     band = real.(band)
+    ΔE = (sum(band;dims = 1)[:] - As)/2
 
     show(to;title = "LSW")
     print("\n")
@@ -88,11 +91,11 @@ function LSW(ψ::SimpleState, H::Hamiltonian, lsk::Vector; isweight::Bool = fals
             for i in 1:length(ψ)
                 u = vecs[1:length(ψ),i,ik]
                 v = vecs[length(ψ)+1:end,i,ik]
-                weight[i,ik] = abs2(sum([exp(1im * dot(k,coordinate(Latt,j)) / 2) * (u[j] + v[j]) for j in 1:length(ψ)]))
+                weight[i,ik] = abs2(sum([exp(1im * dot(k,coordinate(Latt,j))) * (u[j] + v[j]) for j in 1:length(ψ)]))
             end
         end
-        return band,weight
+        return band,ΔE,weight
     else
-        return band
+        return band,ΔE
     end
 end

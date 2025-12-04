@@ -184,7 +184,7 @@ for i in 1:Lx, j in 1:Ly
     if iseven(i + j)
         spins[i, j] = [0.0, 0.0, 1.0]  # Up
     else
-        spins[i, j] = [0.0, 0.0, 1.0] # Down
+        spins[i, j] = [0.0, 0.0, -1.0] # Down
     end
 end
 
