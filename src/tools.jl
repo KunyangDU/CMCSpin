@@ -47,3 +47,15 @@ function get_chunk_range(N::Int, k::Int, i::Int)
     end_idx   = div(i * N, k)
     return start_idx:end_idx
 end
+
+function _local_axis(h::Vector)
+    ŵ = h / norm(h)
+    if abs(ŵ[1]) < 0.6 && abs(ŵ[2]) < 0.6
+        û = [0.0, -ŵ[3], ŵ[2]]
+    else
+        û = [-ŵ[2], ŵ[1], 0.0]
+    end
+    û /= norm(û)
+    v̂ = cross(ŵ,û)
+    return û,v̂,ŵ
+end

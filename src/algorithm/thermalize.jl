@@ -9,6 +9,7 @@ function gradient(ψ::SimpleState,H::Hamiltonian,i::Int64)
     end
     return heff
 end
+
 function thermalize!(ψ::SimpleState, H::Hamiltonian, algo::UpdateAlgo, thmalgo::ThmAlgo;isdisplay::Bool = false)
     lsE = Float64[]
     lsM = Float64[]
