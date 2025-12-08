@@ -1,7 +1,7 @@
 abstract type AbstractLattice end
 # abstract type SimpleLattice{D,S,L} <: AbstractLattice end
 
-Base.@propagate_inbounds Base.getindex(A::AbstractLattice, i::Int) = reverse(location(Latt,i))
+Base.@propagate_inbounds Base.getindex(A::AbstractLattice, i::Int) = reverse(location(A,i))
 Base.size(A::AbstractLattice) = A.lattice.L
 dim(A::AbstractLattice) = dim(A.lattice)
 dim(::Lattice{D}) where D = D

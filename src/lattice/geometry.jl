@@ -17,7 +17,8 @@ function kbasis3(basis::Vector)
     b1 = cross(basis[1],basis[2])*2*pi/V
     b2 = cross(basis[2],basis[3])*2*pi/V
     b3 = cross(basis[3],basis[1])*2*pi/V
-    return Tuple.([b1,b2,b3])
+    # return Tuple.([b1,b2,b3])
+    return [b1,b2,b3]
 end
 
 function kbasis2(basis::Vector)

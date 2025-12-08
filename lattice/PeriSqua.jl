@@ -1,12 +1,11 @@
 using Random
 include("../src/src.jl")
 
+Lx = 2
+Ly = 2
 
-Lx = 10
-Ly = 4
-
-Latt = PeriSqua(Lx,Ly,Tuple(shuffle(1:length(ψ))))
-
+# Latt = PeriSqua(Lx,Ly,Tuple(shuffle(1:length(ψ))))
+Latt = PeriSqua(Lx,Ly)
 figsize = (height = (Ly+1)*50, width = (Lx + 1)*50)
 
 fig = Figure()
@@ -23,4 +22,9 @@ save("lattice/figures/PeriSqua_$(Lx)x$(Ly).pdf",fig)
 save("lattice/figures/PeriSqua_$(Lx)x$(Ly).png",fig)
 
 # Latt.unitcell.lattice_vecs * neighbor_pbc(Latt)[10][2]
+# neighbor_pbc(Latt)
+
+
+# magLatt.lattice
+# coors = map(x -> coordinate(magLatt,x), 1:length(magLatt))
 neighbor_pbc(Latt)

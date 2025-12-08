@@ -7,14 +7,23 @@ function _LSW_AB(k::Vector,ψ::SimpleState,H::Hamiltonian,vs::Vector;S::Number =
     for iname in eachindex(H.name)
         if ndims(H.param[iname]) == 2
             for ((i,j),v) in H.site[iname]
-                A[i,j] += conj(vs[i]') * H.param[iname] * conj(vs[j]) * (S/2) * exp(1im * dot(k, displacement(Latt,i,j,v))) / 2
-                A[j,i] += conj(vs[i]') * H.param[iname] * conj(vs[j]) * (S/2) * exp(-1im * dot(k, displacement(Latt,i,j,v))) / 2
-                B[i,j] += vs[i]' * H.param[iname] * conj(vs[j]) * (S/2) * exp(1im * dot(k, displacement(Latt,i,j,v))) / 2 
-                B[j,i] += vs[i]' * H.param[iname] * conj(vs[j]) * (S/2) * exp(-1im * dot(k, displacement(Latt,i,j,v))) / 2 
+                if i ≠ j
+                    A[i,j] += conj(vs[i]') * H.param[iname] * conj(vs[j]) * (S/2) * exp(1im * dot(k, displacement(Latt,i,j,v))) / 2
+                    A[j,i] += conj(vs[i]') * H.param[iname] * conj(vs[j]) * (S/2) * exp(-1im * dot(k, displacement(Latt,i,j,v))) / 2
+                    B[i,j] += vs[i]' * H.param[iname] * conj(vs[j]) * (S/2) * exp(1im * dot(k, displacement(Latt,i,j,v))) / 2
+                    B[j,i] += vs[i]' * H.param[iname] * conj(vs[j]) * (S/2) * exp(-1im * dot(k, displacement(Latt,i,j,v))) / 2 
+                else
+                    A[i,i] += real(conj(vs[i]') * H.param[iname] * conj(vs[j]) * (S/2) * exp(1im * dot(k, displacement(Latt,i,j,v))))
+                    B[i,i] += real(vs[i]' * H.param[iname] * conj(vs[j]) * (S/2) * exp(1im * dot(k, displacement(Latt,i,j,v))))
+                end
             end
             for i in 1:length(ψ)
                 for j in H.relative[iname][i]
-                    A[i,i] += - sum(ψ[i]' * H.param[iname] * ψ[j]) * S^2
+                    if j == i 
+                        A[i,i] += - sum(ψ[i]' * H.param[iname] * ψ[j]) * S^2 * 2
+                    else
+                        A[i,i] += - sum(ψ[i]' * H.param[iname] * ψ[j]) * S^2
+                    end
                 end
             end
         end
@@ -65,16 +74,18 @@ function LSW(ψ::SimpleState, H::Hamiltonian, lsk::Vector; isweight::Bool = fals
     # end
 
     for (ik,k) in enumerate(lsk)
-        @timeit to "build AB" Ak,Bk = _LSW_AB(k,ψ,H,vs;S = S)
-        @timeit to "build AB" Amk,_ = _LSW_AB(-k,ψ,H,vs;S = S)
-        @timeit to "eigen" f = eigen(vcat(hcat(Ak,Bk),-hcat(Bk',conj(Amk))))
+        # @timeit to "build AB" 
+        Ak,Bk = _LSW_AB(k,ψ,H,vs;S = S)
+        # @timeit to "build AB" 
+        Amk,_ = _LSW_AB(-k,ψ,H,vs;S = S)
+        # @timeit to "eigen" 
+        f = eigen(vcat(hcat(Ak,Bk),-hcat(Bk',conj(Amk))))
         band[:,ik] = f.values[end - length(ψ) + 1:end]
         isweight && (vecs[:,:,ik] = f.vectors[:,end - length(ψ) + 1:end])
-        if mod(ik,showperstep) == 0
-            show(to;title = "$(ik)/$(length(lsk))")
-            print("\n")
-        end
-        @show [Ak[i,i] for i in 1:length(ψ)]
+        # if mod(ik,showperstep) == 0
+        #     show(to;title = "$(ik)/$(length(lsk))")
+        #     print("\n")
+        # end
         As[ik] = tr(Ak)
     end
     
@@ -82,16 +93,24 @@ function LSW(ψ::SimpleState, H::Hamiltonian, lsk::Vector; isweight::Bool = fals
     band = real.(band)
     ΔE = (sum(band;dims = 1)[:] - As)/2
 
-    show(to;title = "LSW")
+    # show(to;title = "LSW")
     print("\n")
     
     if isweight
         weight = zeros(length(ψ),length(lsk))
+        localaxis = _local_axis.(ψ)
+        chiralsp = map(x -> x[1] + 1im * x[2], localaxis)
+        chiralsm = map(x -> x[1] - 1im * x[2], localaxis)
         for (ik,k) in enumerate(lsk)
             for i in 1:length(ψ)
                 u = vecs[1:length(ψ),i,ik]
                 v = vecs[length(ψ)+1:end,i,ik]
-                weight[i,ik] = abs2(sum([exp(1im * dot(k,coordinate(Latt,j))) * (u[j] + v[j]) for j in 1:length(ψ)]))
+                M = zeros(ComplexF64, 3)
+                for j in 1:length(ψ)
+                    M += exp(1im * dot(k,coordinate(Latt,j))) * (conj(u[j]) * chiralsp[j] + conj(v[j]) * chiralsm[j])
+                end
+                weight[i,ik] = norm(k) ≈ 0 ? norm(M) ^ 2 : norm(M) ^ 2 - abs2(dot(M[1:2],k)) / norm(k)^2
+                # abs2(sum([exp(1im * dot(k,coordinate(Latt,j))) * (u[j] + v[j]) for j in 1:length(ψ)]))
             end
         end
         return band,ΔE,weight

@@ -1,7 +1,7 @@
 
 function plotLatt!(ax::Axis,Latt::AbstractLattice,
-    xshift::Vector = collect.(eachcol(Latt.unitcell.lattice_vecs))[1],
-    yshift::Vector = collect.(eachcol(Latt.unitcell.lattice_vecs))[2],
+    # xshift::Vector = collect.(eachcol(Latt.unitcell.lattice_vecs))[1],
+    # yshift::Vector = collect.(eachcol(Latt.unitcell.lattice_vecs))[2],
     ;kwargs...)
 
     Lx,Ly = size(Latt)
@@ -23,7 +23,7 @@ function plotLatt!(ax::Axis,Latt::AbstractLattice,
     if bond
         for level in tplevel
             # NN bond 
-            for (i, j) in get(kwargs,:pairs,neighbor(Latt;level = level))
+            for ((i, j),v) in get(kwargs,:pairs,neighbor_pbc(Latt;level = level,issort = false))
 
                     x = map([i, j]) do i
                         coordinate(Latt, i)[1] + total_shift[1]
@@ -32,15 +32,20 @@ function plotLatt!(ax::Axis,Latt::AbstractLattice,
                         coordinate(Latt, i)[2] + total_shift[2]
                     end
 
-                    if abs((coordinate(Latt,i) .- coordinate(Latt,j))[1]) > (Lx-1)*xshift[1] - 1e-5 
-                        x[findmin(x)[2]] += xshift[1] * Lx
-                        y[findmin(y)[2]] += xshift[2] * Lx
-                    end
+                    x[2] += (Latt.unitcell.lattice_vecs * v)[1]
+                    y[2] += (Latt.unitcell.lattice_vecs * v)[2]
+                    # x[1] -= v[1] * xshift[1] + v[1] * yshift[1]
+                    # y[1] -= v[1] * xshift[2] + v[2] * yshift[2]
 
-                    if abs((coordinate(Latt,i) .- coordinate(Latt,j))[2]) > (Ly-1)*yshift[2] - 1e-5 
-                        x[findmin(x)[2]] += yshift[1] * Ly
-                        y[findmin(y)[2]] += yshift[2] * Ly
-                    end
+                    # if abs((coordinate(Latt,i) .- coordinate(Latt,j))[1]) > (Lx-1)*xshift[1] - 1e-5 
+                    #     x[findmin(x)[2]] += xshift[1] * Lx
+                    #     y[findmin(y)[2]] += xshift[2] * Lx
+                    # end
+
+                    # if abs((coordinate(Latt,i) .- coordinate(Latt,j))[2]) > (Ly-1)*yshift[2] - 1e-5 
+                    #     x[findmin(x)[2]] += yshift[1] * Ly
+                    #     y[findmin(y)[2]] += yshift[2] * Ly
+                    # end
 
                     lines!(ax, x, y;
                         linewidth=linewidth,

@@ -3,8 +3,8 @@ mutable struct SimpleState{D,L} <: AbstractState
     function SimpleState(A::Matrix{Float64})
         return new{size(A)...}(A)
     end
-    function SimpleState(Latt::AbstractLattice)
-        A = rand(3,length(Latt))
+    function SimpleState(Latt::AbstractLattice, generate::Function = rand)
+        A = generate(3,length(Latt))
         return new{size(A)...}(A)
     end
 end

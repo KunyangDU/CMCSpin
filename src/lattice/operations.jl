@@ -6,8 +6,8 @@ function neighbor(Latt::AbstractLattice,i::Int64;level::Int64 = 1,ordered::Bool 
     return neighbor(nb,i)
 end
 neighbor(nb::Vector,i::Int64) = filter(x -> i in x,nb)
-function neighborsites(Latt::AbstractLattice,i::Int64;level::Int64 = 1,ordered::Bool = false,issort::Bool = true)
-    return map(x -> x[1] == i ? x[2] : x[1], neighbor(Latt,i;level = level,ordered = ordered,issort = issort))
+function neighborsites(Latt::AbstractLattice,i::Int64;level::Int64 = 1)
+    return map(x -> x[1] == i ? x[2] : x[1], neighbor(Latt,i;level = level,ordered = false,issort = true))
 end
 """
 translation vector on lattice basis

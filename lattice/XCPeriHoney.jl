@@ -2,8 +2,8 @@
 include("../src/src.jl")
 
 
-Lx = 3
-Ly = 3
+Lx = 2
+Ly = 2
 
 Latt = XCPeriHoneycomb(Lx,Ly)
 
