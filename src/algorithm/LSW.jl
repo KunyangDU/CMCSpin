@@ -118,3 +118,28 @@ function LSW(ψ::SimpleState, H::Hamiltonian, lsk::Vector; isweight::Bool = fals
         return band,ΔE
     end
 end
+
+
+function LSW1(ψ::SimpleState, H::Hamiltonian, k::Vector; S::Number = 1/2,
+    showperstep::Int64 = 50)
+    vs = map(y -> y[1] + 1im * y[2],map(x -> _local_axis(x),ψ))
+
+    Ak,Bk = _LSW_AB(k,ψ,H,vs;S = S)
+    Amk,_ = _LSW_AB(-k,ψ,H,vs;S = S)
+    f = eigen(vcat(hcat(Ak,Bk),-hcat(Bk',conj(Amk))))
+    band = f.values[end - length(ψ) + 1:end]
+    A = tr(Ak)
+    @assert mean(abs.(imag.(band))) < 1e-8 "spin not stable"
+    band = real.(band)
+    ΔE = (sum(band) - A)/2
+    return band,ΔE
+end
+
+function _minimum_LSWcorrect(ψ::SimpleState,H::Hamiltonian,Latt::AbstractLattice;
+    tol::Float64 = 1e-6, maxiter::Int64 = 10000)
+    Q = Latt.lattice.N / _prim_cell(Latt,ψ)[1]
+    I,ϵ = hcubature(x -> LSW1(ψ,H,collect(Latt.unitcell.reciprocal_vecs) * x)[2], (0,0),(1,1),
+    rtol = tol,atol = tol, maxevals = maxiter)
+    return real(I)/ Q
+end
+

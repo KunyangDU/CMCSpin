@@ -1,4 +1,4 @@
-using LinearAlgebra
+using LinearAlgebra,MultivariateStats,Clustering,Colors
 include("../src/src.jl")
 
 # function mix_phases(weights::Matrix, bases::Vector{RGB{Float64}} = ColorSchemes.tab10[1:size(weights)[1]])
@@ -131,15 +131,17 @@ weights = reshape(weights,3,L,L)
 colors = mix_phases(weights,[colorant"red",colorant"green",colorant"blue"])
 # weights[:,1,1]
 # d = 3
-# coor = [[i,j] for i in 1:L for j in 1:L]
-# x = map(x -> x[1], coor)
-# y = map(x -> x[2], coor)
+coor = [[i,j] for i in 1:L for j in 1:L]
+x = map(x -> x[1], coor)
+y = map(x -> x[2], coor)
 # colors = mix_phases(weights)
 fig = Figure()
 # heatmap!(Axis(fig[1,1]),1:L,1:L,rgb_map[:,:,d])
-heatmap!(Axis(fig[1,1]),1:L,1:L,colors')
-
+# heatmap!(Axis(fig[1,1]),1:L,1:L,colors')
+scatter!(Axis(fig[1,1]), x,y,color = [:red,:blue,:green][clustering.assignments])
 # scatterlines!(ax,f[1:5])
 display(fig)
 # length(x)
+
+# clustering.
 

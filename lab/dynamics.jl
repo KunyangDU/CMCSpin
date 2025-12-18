@@ -12,7 +12,7 @@ Tuple(neighbor_pbc(Latt))
 )
 # setgroup!(H,Latt.group)
 
-ψ = SimpleState(hcat([[0.0,0.0,1.0] * (-1) ^ sum(Latt[i][2]) for i in 1:length(Latt)]...))
+ψ = SimpleState(hcat([[0.0,1.0,1.0]/sqrt(2) * (1) ^ sum(Latt[i][2]) for i in 1:length(Latt)]...))
 
 vpath,rpath,rnode = vrange([[0,0],[pi,0],[pi,pi],[0,0]],121)
 band,ΔE,weight = LSW(ψ,H,vpath;isweight = true)

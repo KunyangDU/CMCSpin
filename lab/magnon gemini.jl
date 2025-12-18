@@ -173,7 +173,7 @@ end
 # ==============================================================================
 
 # 1. 设定参数
-Lx, Ly = 1, 1  # 磁性原胞大小 (AFM 至少需要 2x2 或 2x1)
+Lx, Ly = 2, 2  # 磁性原胞大小 (AFM 至少需要 2x2 或 2x1)
 J = 1.0
 S = 0.5
 
@@ -182,9 +182,9 @@ spins = Matrix{Vector{Float64}}(undef, Lx, Ly)
 for i in 1:Lx, j in 1:Ly
     # (-1)^(i+j) 决定方向
     if iseven(i + j)
-        spins[i, j] = [0.0, 0.0, 1.0]  # Up
+        spins[i, j] = [0.0, 1.0, 0.0]  # Up
     else
-        spins[i, j] = [0.0, 0.0, 1.0] # Down
+        spins[i, j] = [0.0, -1.0, 0.0] # Down
     end
 end
 
